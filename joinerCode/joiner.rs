@@ -43,6 +43,7 @@ fn xor(a: &[u8], b: &[u8]) -> ~[u8] {
 }
 
 fn split(msg1_bytes: &[u8], msg2_bytes: &[u8], mut output_file: File) {
+    // I didn't know if I should print the output to stdout or save it to a file, so I did both
     let original_bytes: ~[u8] = xor(msg1_bytes, msg2_bytes);
     output_file.write(original_bytes);
     print(str::from_utf8(original_bytes));
