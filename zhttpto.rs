@@ -18,6 +18,7 @@ use std::{str};
 
 static IP: &'static str = "127.0.0.1";
 static PORT:        int = 4414;
+static mut count:   int = 0;
 
 fn main() {
     let addr = from_str::<SocketAddr>(format!("{:s}:{:d}", IP, PORT)).unwrap();
@@ -33,7 +34,13 @@ fn main() {
             match stream {
                 Some(ref mut s) => {
                              match s.peer_name() {
-                                Some(pn) => {println(format!("Received connection from: [{:s}]", pn.to_str()));},
+                                Some(pn) => {
+					println(format!("Received connection from: [{:s}]", pn.to_str()));
+					unsafe {
+						count = count + 1;
+						println!("Total number of requests received: {:d}", count)
+					}
+				},
                                 None => ()
                              }
                            },
@@ -44,18 +51,19 @@ fn main() {
             stream.read(buf);
             let request_str = str::from_utf8(buf);
             println(format!("Received request :\n{:s}", request_str));
-            
+            unsafe {
             let response: ~str = 
-                ~"HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n
+                 ("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n
                  <doctype !html><html><head><title>Hello, Rust!</title>
                  <style>body { background-color: #111; color: #FFEEAA }
                         h1 { font-size:2cm; text-align: center; color: black; text-shadow: 0 0 4mm red}
                         h2 { font-size:2cm; text-align: center; color: black; text-shadow: 0 0 4mm green}
                  </style></head>
                  <body>
-                 <h1>Greetings, Krusty!</h1>
-                 </body></html>\r\n";
+                 <h1>Greetings, Krusty!</h1><h3>" + format!("Total Number of Requests: {:d}</h3>", count) +
+                 "</body></html>\r\n");
             stream.write(response.as_bytes());
+            }
             println!("Connection terminates.");
         }
     }
