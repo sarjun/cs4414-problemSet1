@@ -4,24 +4,26 @@ use std::io::File;
 
 fn main() {
     let args: ~[~str] = os::args();
-    if args.len() != 2 {
-        println!("Usage: {:s} <inputfile>", args[0]); 
+    if args.len() != 3 {
+        println!("Usage: {:s} <splitFile1> <splitFile2>", args[0]); 
     } else {
-        let fname = args[1];
-        let path = Path::new(fname.clone());
-        let msg_file = File::open(&path);
+        let f1name = args[1];
+        let f2name = args[2];
+        let path1 = Path::new(f1name.clone());
+        let path2 = Path::new(f2name.clone());
+        let msg_file1 = File::open(&path1);
+        let msg_file2 = File::open(&path2);
 
-        match (msg_file) {
-            Some(mut msg) => {
-                let msg_bytes: ~[u8] = msg.read_to_end();
-                let share1_file 
-                       = File::create(&Path::new(fname + ".share1"));
-                let share2_file 
-                       = File::create(&Path::new(fname + ".share2"));
+        match (msg_file1, msg_file2) {
+            Some(mut msg1, mut msg2) => {
+                let msg1_bytes: ~[u8] = msg1.read_to_end();
+                let msg2_bytes: ~[u8] = msg2.read_to_end();
+                let output_file
+                       = File::create(&Path::new("originalMsg"));
                 
-                match (share1_file, share2_file) {
-                    (Some(share1), Some(share2)) => { 
-                        split(msg_bytes, share1, share2); 
+                match (output_file) {
+                    (Some(output)) => { 
+                        split(msg1_bytes, msg2_bytes, output_file); 
                         } ,
                     (_, _) => fail!("Error opening output files!"),
                 }
@@ -39,16 +41,7 @@ fn xor(a: &[u8], b: &[u8]) -> ~[u8] {
     ret
 }
 
-fn split(msg_bytes: &[u8], mut share1: File, mut share2: File) {
-    let mut random_bytes: ~[u8] = ~[];
-    // This is not cryptographically strong randomness! 
-    // (For entertainment purposes only.)
-    for _ in range(0, msg_bytes.len()) {
-	let random_byte = random();
-	random_bytes.push(random_byte);
-    }
-    
-    let encrypted_bytes = xor(msg_bytes, random_bytes);
-    share1.write(random_bytes);
-    share2.write(encrypted_bytes);
+fn split(msg1_bytes: &[u8], mut msg2_bytes: &[u8], mut output_file: File) {
+    let mut original_bytes: ~[u8] = xor(msg1_bytes, msg2_bytes);
+    output_file.write(original_bytes);
 }
