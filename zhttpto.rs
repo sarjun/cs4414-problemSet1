@@ -56,11 +56,25 @@ fn main() {
             	components.push(tempString.to_owned());
             }
             if !str::eq(&components[1], &~"/") {
+            	if components[1].len() > 4 && str::eq(&components[1].slice_from(components[1].len()-5).to_owned(), &~".html") {
         	let f1name = components[1].slice_from(1);
         	let path1 = Path::new(f1name.clone());
         	let mut msg_file1 = File::open(&path1);
                 let msg_bytes1: ~[u8] = msg_file1.read_to_end();
 		stream.write(msg_bytes1);
+		}
+		else {
+            let response: ~str = 
+                 ~"HTTP/1.1 403 Forbidden\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n
+                 <doctype !html><html><head><title>403 Forbidden</title>
+                 <style>body { background-color: #111; color: #FFEEAA }
+                        h1 { font-size:2cm; text-align: center; color: black; text-shadow: 0 0 4mm red}
+                        h2 { font-size:2cm; text-align: center; color: black; text-shadow: 0 0 4mm green}
+                 </style></head>
+                 <body>
+                 <h1>403: Forbidden</h1><h3>You do not have permission to access that file";
+		stream.write(response.as_bytes());
+		}
             }
             else {
             unsafe {
