@@ -56,7 +56,15 @@ fn main() {
             	components.push(tempString.to_owned());
             }
             if !str::eq(&components[1], &~"/") {
-            	if components[1].len() > 4 && str::eq(&components[1].slice_from(components[1].len()-5).to_owned(), &~".html") {
+		let mut dotdot = false;
+		let dot : u8 = ".".as_bytes()[0];
+		let slash : u8 = "/".as_bytes()[0];
+		for i in range (0, components[1].len()-3) {
+			if(components[1][i]==dot && components[1][i+1]==dot && components[1][i+2]==slash) {
+				dotdot = true;
+			}
+		}
+            	if components[1].len() > 4 && !dotdot && str::eq(&components[1].slice_from(components[1].len()-5).to_owned(), &~".html") {
         	let f1name = components[1].slice_from(1);
         	let path1 = Path::new(f1name.clone());
         	let mut msg_file1 = File::open(&path1);
