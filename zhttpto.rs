@@ -51,6 +51,18 @@ fn main() {
             stream.read(buf);
             let request_str = str::from_utf8(buf);
             println(format!("Received request :\n{:s}", request_str));
+            let mut components : ~[~str] = ~[];
+            for tempString in request_str.split(' ') {
+            	components.push(tempString.to_owned());
+            }
+            if !str::eq(&components[1], &~"/") {
+        	let f1name = components[1].slice_from(1);
+        	let path1 = Path::new(f1name.clone());
+        	let mut msg_file1 = File::open(&path1);
+                let msg_bytes1: ~[u8] = msg_file1.read_to_end();
+		stream.write(msg_bytes1);
+            }
+            else {
             unsafe {
             let response: ~str = 
                  ("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n
@@ -65,6 +77,7 @@ fn main() {
             stream.write(response.as_bytes());
             }
             println!("Connection terminates.");
+            }
         }
     }
 }
